@@ -152,6 +152,33 @@ for (const p of SAMPLE_PROGRAMS) {
     });
   }
 }
+const KNOWN_WIRES = new Set(['w-pc-imem', 'w-pc-pcadd', 'w-pcadd-muxPc', 'w-imm-muxPc', 'w-muxPc-pc', 'w-imem-ir', 'w-ir-ctrl', 'w-ir-regs', 'w-ir-imm',
+  'w-regs-alu', 'w-regs-muxB', 'w-imm-muxB', 'w-muxB-alu', 'w-alu-dmem', 'w-regs-dmem', 'w-dmem-muxWb', 'w-alu-muxWb', 'w-muxWb-regs',
+  'c-ctrl-muxB', 'c-ctrl-alu', 'c-ctrl-dmem', 'c-ctrl-muxWb', 'c-ctrl-regs', 'c-ctrl-muxPc']);
+test('CPU micro-steps: every phase has steps, tokens travel on known wires', () => {
+  for (const p of SAMPLE_PROGRAMS) {
+    const cpu = new CPU(); cpu.load(ISA.assemble(p.src).words);
+    let guard = 0;
+    while (!cpu.halted && guard++ < 5000) {
+      const info = cpu.stepPhase();
+      assert.ok(info.steps.length > 0, `${p.id} ${info.phase} has no steps`);
+      for (const s of info.steps) {
+        assert.ok(s.text && s.text.length > 10, 'step text');
+        for (const w of s.wires) assert.ok(KNOWN_WIRES.has(w), 'unknown wire ' + w);
+        for (const t of s.tokens) assert.ok(s.wires.includes(t.wire), `token wire ${t.wire} not lit in step`);
+      }
+      if (info.phase === 'WRITEBACK') assert.ok(info.steps.some((s) => (s.commit || []).includes('pc')), 'WB commits pc');
+    }
+  }
+});
+test('pipeline describes every busy stage in every cycle', () => {
+  for (const p of SAMPLE_PROGRAMS) for (const fwd of [true, false]) {
+    const pl = new Pipeline({ forwarding: fwd }); pl.load(ISA.assemble(p.src).words); pl.run();
+    for (const t of pl.timeline) for (const s of ['IF', 'ID', 'EX', 'MEM', 'WB']) {
+      if (t.occ[s] !== null) assert.ok(t.detail[s], `${p.id} cycle ${t.cycle} ${s} has no description`);
+    }
+  }
+});
 test('forwarding reduces cycles and load-use still stalls', () => {
   const asm = ISA.assemble(SAMPLE_PROGRAMS.find((p) => p.id === 'hazards').src);
   const a = new Pipeline({ forwarding: true }); a.load(asm.words); a.run();

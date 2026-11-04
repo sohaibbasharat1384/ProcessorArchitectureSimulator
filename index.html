@@ -14,7 +14,10 @@
       <h1>شبیه‌ساز معماری پردازنده</h1>
       <div class="sub">Processor Architecture Simulator — ALU · Registers · Memory · Cache · Control · Datapath · Pipeline · Branch Prediction</div>
     </div>
-    <button id="theme" class="theme-toggle" title="تغییر حالت روشن/تیره">◐ پوسته</button>
+    <div class="top-ctl">
+      <label class="speedctl">سرعت انیمیشن <input type="range" id="speed" min="-2" max="2" step="0.25" value="0" style="direction:ltr"> <span id="speedv" class="ltr">1×</span></label>
+      <button id="theme" class="theme-toggle" title="تغییر حالت روشن/تیره">◐ پوسته</button>
+    </div>
   </header>
   <nav class="tabs" id="tabs" aria-label="بخش‌ها"></nav>
   <main id="main"></main>
@@ -29,6 +32,7 @@
   <script src="js/core/pipeline.js"></script>
   <script src="js/core/programs.js"></script>
   <!-- user interface: one file per architecture part -->
+  <script src="js/ui/anim.js"></script>
   <script src="js/ui/common.js"></script>
   <script src="js/ui/intro.js"></script>
   <script src="js/ui/alu.js"></script>

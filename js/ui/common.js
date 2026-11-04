@@ -122,6 +122,94 @@
       return api;
     },
 
+    /**
+     * Step-by-step controller: first / previous / next / play.
+     * opts.pull(): optional generator called at the end of the list for more steps (disables "previous").
+     * render(step, index, animate) may return a promise that resolves when its animation ends.
+     */
+    stepper(container, opts) {
+      opts = opts || {};
+      const box = UI.el(`<div class="stepper">
+        <div class="btn-row">
+          ${opts.pull ? '' : '<button class="btn s-first" title="بازگشت به ابتدا">⏮</button><button class="btn s-prev">◀ گام قبلی</button>'}
+          <button class="btn primary s-next">گام بعدی ▶</button>
+          <button class="btn s-play">پخش خودکار ⏵</button>
+          ${opts.extraButtons || ''}
+        </div>
+        <div class="s-prog"><div class="bar"><i></i></div><span class="s-count small muted"></span></div>
+        <div class="explain s-text"></div>
+      </div>`);
+      container.appendChild(box);
+      const q = (s) => UI.$(s, box);
+      let steps = [], idx = -1, render = () => {}, playing = false, intro = '';
+
+      function update() {
+        const n = steps.length;
+        q('.s-count').textContent = idx < 0 ? (opts.pull ? '' : `${n} گام`) : opts.pull ? `گام ${idx + 1}` : `گام ${idx + 1} از ${n}`;
+        q('.bar i').style.width = opts.pull || !n ? '0' : ((idx + 1) / n) * 100 + '%';
+        const s = steps[idx];
+        q('.s-text').innerHTML = s ? (s.title ? `<b>${s.title}</b> — ` : '') + s.text : intro;
+        if (q('.s-prev')) { q('.s-prev').disabled = idx < 0; q('.s-first').disabled = idx < 0; }
+        q('.s-next').disabled = !hasNext();
+        if (!playing) q('.s-play').textContent = 'پخش خودکار ⏵';
+      }
+      function hasNext() { return idx < steps.length - 1 || (opts.pull && opts.canPull && opts.canPull()); }
+      function go(i, animate) {
+        Anim.skip();
+        idx = i;
+        update();
+        return Promise.resolve(render(steps[idx] || null, idx, !!animate));
+      }
+      const api = {
+        el: box,
+        get index() { return idx; },
+        get steps() { return steps; },
+        get playing() { return playing; },
+        set(list, renderFn, introText) {
+          api.stop();
+          steps = list || [];
+          if (renderFn) render = renderFn;
+          if (introText !== undefined) intro = introText;
+          return go(-1, false);
+        },
+        async next() {
+          if (idx >= steps.length - 1) {
+            if (!opts.pull) return false;
+            const more = opts.pull();
+            if (!more || !more.length) { update(); return false; }
+            steps.push(...more);
+          }
+          await go(idx + 1, true);
+          return true;
+        },
+        prev() { if (idx >= 0) go(idx - 1, false); },
+        first() { go(-1, false); },
+        last() { api.stop(); if (steps.length) go(steps.length - 1, false); },
+        push(more) { steps.push(...more); update(); },
+        async play() {
+          if (playing) { api.stop(); return; }
+          playing = true;
+          q('.s-play').textContent = 'توقف ⏸';
+          while (playing) {
+            const ok = await api.next();
+            if (!ok || !playing) break;
+            await Anim.sleep(opts.pause || 700);
+          }
+          playing = false;
+          update();
+        },
+        stop() { playing = false; update(); },
+        refresh: update,
+      };
+      q('.s-next').addEventListener('click', () => { api.stop(); api.next(); });
+      q('.s-play').addEventListener('click', () => api.play());
+      if (q('.s-prev')) {
+        q('.s-prev').addEventListener('click', () => { api.stop(); api.prev(); });
+        q('.s-first').addEventListener('click', () => { api.stop(); api.first(); });
+      }
+      return api;
+    },
+
     labelsByAddr(labels) {
       const m = {};
       for (const k in labels) m[labels[k]] = m[labels[k]] ? m[labels[k]] + ',' + k : k;

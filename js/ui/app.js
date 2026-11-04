@@ -34,6 +34,17 @@
   window.addEventListener('hashchange', () => show(location.hash.slice(1)));
   show(location.hash.slice(1) || 'intro');
 
+  // Global animation speed
+  const sp = document.getElementById('speed'), spv = document.getElementById('speedv');
+  const showSpeed = () => { spv.textContent = (Math.round(window.Anim.speed * 100) / 100) + '×'; };
+  sp.value = Math.log2(window.Anim.speed);
+  showSpeed();
+  sp.addEventListener('input', () => {
+    window.Anim.setSpeed(Math.pow(2, +sp.value));
+    try { localStorage.setItem('pas-speed', String(window.Anim.speed)); } catch (e) { /* ignore */ }
+    showSpeed();
+  });
+
   // Theme toggle
   const root = document.documentElement;
   const tbtn = document.getElementById('theme');
