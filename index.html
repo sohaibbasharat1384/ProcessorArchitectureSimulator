@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>شبیه‌ساز معماری پردازنده</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>شبیه‌ساز معماری پردازنده</h1>
+      <div class="sub">Processor Architecture Simulator — ALU · Registers · Memory · Cache · Control · Datapath · Pipeline · Branch Prediction</div>
+    </div>
+    <button id="theme" class="theme-toggle" title="تغییر حالت روشن/تیره">◐ پوسته</button>
+  </header>
+  <nav class="tabs" id="tabs" aria-label="بخش‌ها"></nav>
+  <main id="main"></main>
+
+  <!-- core simulation (also usable from Node.js) -->
+  <script src="js/core/alu.js"></script>
+  <script src="js/core/isa.js"></script>
+  <script src="js/core/storage.js"></script>
+  <script src="js/core/cache.js"></script>
+  <script src="js/core/predictor.js"></script>
+  <script src="js/core/cpu.js"></script>
+  <script src="js/core/pipeline.js"></script>
+  <script src="js/core/programs.js"></script>
+  <!-- user interface: one file per architecture part -->
+  <script src="js/ui/common.js"></script>
+  <script src="js/ui/intro.js"></script>
+  <script src="js/ui/alu.js"></script>
+  <script src="js/ui/registers.js"></script>
+  <script src="js/ui/memory.js"></script>
+  <script src="js/ui/cache.js"></script>
+  <script src="js/ui/control.js"></script>
+  <script src="js/ui/cpu.js"></script>
+  <script src="js/ui/pipeline.js"></script>
+  <script src="js/ui/predictor.js"></script>
+  <script src="js/ui/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "processor-architecture-simulator",
+  "version": "1.0.0",
+  "description": "Interactive simulator of processor architecture components (ALU, registers, memory, cache, control unit, datapath, pipeline, branch prediction)",
+  "private": true,
+  "scripts": {
+    "test": "node tests/run-tests.js",
+    "start": "python3 -m http.server 8000"
+  },
+  "license": "MIT"
+}
